@@ -29,7 +29,11 @@ const courseSchema = new Schema<TCourse>(
   {
     title: { type: String, required: true, unique: true },
     instructor: { type: String, required: true },
-    categoryId: { type: Schema.Types.ObjectId, required: true },
+    categoryId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: 'Category',
+    },
     price: { type: Number, required: true },
     tags: { type: [tagsSchema] },
     startDate: { type: String, required: true },
@@ -38,6 +42,7 @@ const courseSchema = new Schema<TCourse>(
     provider: { type: String, required: true },
     durationInWeeks: { type: Number },
     details: { type: detailsSchema, required: true },
+    createdBy: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
   },
   {
     timestamps: true,
