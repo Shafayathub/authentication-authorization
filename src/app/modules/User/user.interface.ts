@@ -1,6 +1,7 @@
-import { Date } from 'mongoose';
+import { Date, Types } from 'mongoose';
 
 export type TUser = {
+  _id?: Types.ObjectId;
   username: string;
   email: string;
   password: string;

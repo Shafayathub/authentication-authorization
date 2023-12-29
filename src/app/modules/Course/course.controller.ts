@@ -22,9 +22,9 @@ const getAllCourses: RequestHandler = async (req, res, next) => {
     const skip: number = Number((page - 1) * limit);
     const total: number = page * limit - skip;
     const result = await CourseServices.getAllCoursesFromDB(req.query);
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: 'Course created successfully',
+      message: 'Courses are retrieved successfully',
       meta: {
         page,
         limit,

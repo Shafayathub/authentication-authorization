@@ -3,9 +3,10 @@
 import mongoose from 'mongoose';
 import AppError from '../../errors/appError';
 import { Category } from '../Category/catagory.model';
-import { TCourse, TDetails } from './course.interface';
+import { TCourse } from './course.interface';
 import { Course } from './cousre.model';
 import { Review } from '../Review/review.model';
+import httpStatus from 'http-status';
 
 const createCourseIntoDB = async (payload: TCourse) => {
   const { startDate } = payload;
@@ -30,7 +31,11 @@ const createCourseIntoDB = async (payload: TCourse) => {
     const result = await Course.create(outPutObj);
     return result;
   } else {
-    throw new AppError(`${categoryId} is not a valid ID!`, 'Invalid ID');
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      `${categoryId} is not a valid ID!`,
+      'Invalid ID',
+    );
   }
 };
 

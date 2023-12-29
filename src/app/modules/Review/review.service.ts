@@ -1,3 +1,4 @@
+import httpStatus from 'http-status';
 import AppError from '../../errors/appError';
 import { Course } from '../Course/cousre.model';
 import { TReview } from './review.interface';
@@ -10,7 +11,11 @@ const createReviewIntoDB = async (payload: TReview) => {
     const result = await Review.create(payload);
     return result;
   } else {
-    throw new AppError(`${courseId} is not a valid ID!`, 'Invalid ID');
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      `${courseId} is not a valid ID!`,
+      'Invalid ID',
+    );
   }
 };
 
