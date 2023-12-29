@@ -16,9 +16,13 @@ app.use(cors());
 
 // routes
 app.use('/api/categories', CategoryRoutes);
+
 app.use('/api', CourseRoutes);
+
 app.use('/api/reviews', ReviewRoutes);
+
 app.use('/api/auth', UserRoutes);
+
 app.use('/api/auth', AuthRoutes);
 
 app.get('/', (req: Request, res: Response) => {

@@ -40,15 +40,9 @@ const loginExistingUser = async (payload: TUserLogin) => {
 
   const secret = config.jwt_access_secret as string;
 
-  const accessToken = jwt.sign(
-    {
-      data: jwtPayload,
-    },
-    secret,
-    {
-      expiresIn: '10d',
-    },
-  );
+  const accessToken = jwt.sign(jwtPayload, secret, {
+    expiresIn: '10d',
+  });
   const user = {
     _id: isUserExist?._id,
     username: isUserExist?.username,

@@ -3,8 +3,9 @@ import AppError from '../errors/appError';
 import httpStatus from 'http-status';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../config';
+import { TUserRole } from '../modules/User/user.interface';
 
-const auth = () => {
+const auth = (...authRoles: TUserRole[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       //   token checking
@@ -25,7 +26,17 @@ const auth = () => {
           if (err) {
             throw new AppError(
               httpStatus.UNAUTHORIZED,
-              'token verify hoi ni.',
+              'You do not have the necessary permissions to access this resource.',
+              'Unauthorized Access',
+            );
+          }
+
+          const role = (decoded as JwtPayload).role;
+
+          if (authRoles && !authRoles.includes(role)) {
+            throw new AppError(
+              httpStatus.UNAUTHORIZED,
+              'admin roler problem.',
               'Unauthorized Access',
             );
           }

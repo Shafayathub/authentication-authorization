@@ -1,4 +1,5 @@
 import { Date, Types } from 'mongoose';
+import { UserRole } from './user.constant';
 
 export type TUser = {
   _id?: Types.ObjectId;
@@ -9,3 +10,5 @@ export type TUser = {
   createdAt?: Date;
   updatedAt?: Date;
 };
+
+export type TUserRole = keyof typeof UserRole;
