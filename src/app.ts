@@ -5,6 +5,7 @@ import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import { CourseRoutes } from './app/modules/Course/course.route';
 import { ReviewRoutes } from './app/modules/Review/review.route';
 import notFound from './app/middlewares/notFound';
+import { UserRoutes } from './app/modules/User/user.route';
 
 const app: Application = express();
 
@@ -16,9 +17,10 @@ app.use(cors());
 app.use('/api/categories', CategoryRoutes);
 app.use('/api', CourseRoutes);
 app.use('/api/reviews', ReviewRoutes);
+app.use('/api/auth', UserRoutes);
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello assingment 3!');
+  res.send('Hello assingment 4!');
 });
 
 // global error handler
