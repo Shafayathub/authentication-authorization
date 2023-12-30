@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import AppError from '../../errors/appError';
 import { User } from '../User/user.model';
 import { TUserLogin } from './auth.interface';
@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt';
 import config from '../../config';
 import { TUser } from '../User/user.interface';
 import httpStatus from 'http-status';
+import { PasswordHistory } from '../User/passwordHistory/passwordHistory.model';
 
 const loginExistingUser = async (payload: TUserLogin) => {
   const isUserExist: TUser = await User.findOne({
@@ -52,6 +53,73 @@ const loginExistingUser = async (payload: TUserLogin) => {
   return { user, token: accessToken };
 };
 
+const changePasswordFromDB = async (
+  user: JwtPayload,
+  payload: { currentPassword: string; newPassword: string },
+) => {
+  const { _id } = user;
+
+  const userWhoOwnsThePass = await User.findById(_id).select('+password');
+
+  const usersPassword = userWhoOwnsThePass?.password as string;
+
+  const checkCurrentPassword = await bcrypt.compare(
+    payload.currentPassword,
+    usersPassword,
+  );
+  const hasPasswordHistory = await PasswordHistory.findOne({ userId: _id });
+  let passwordHistory = hasPasswordHistory?.passwordHistory || [];
+
+  if (checkCurrentPassword) {
+    passwordHistory.unshift(usersPassword);
+    passwordHistory = passwordHistory.slice(0, 3);
+  }
+
+  const passwordHistoryDB = await PasswordHistory.findOneAndUpdate(
+    { userId: _id },
+    {
+      userId: _id,
+      passwordHistory,
+    },
+    {
+      upsert: true,
+      timestamps: true,
+    },
+  );
+
+  const passwordFromPasswordHistoryDB =
+    passwordHistoryDB?.passwordHistory as string[];
+
+  for (const e of passwordFromPasswordHistoryDB) {
+    const test = await bcrypt.compare(payload?.newPassword, e);
+    if (test) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        '',
+        'Password change failed. Ensure the new password is unique and not among the last 2 used.',
+      );
+    }
+  }
+  const newPasswordHash = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcrypt_salt_rounds),
+  );
+
+  const result = await User.findByIdAndUpdate(
+    _id,
+    {
+      password: newPasswordHash,
+    },
+    {
+      timestamps: true,
+      new: true,
+    },
+  );
+
+  return result;
+};
+
 export const AuthServices = {
   loginExistingUser,
+  changePasswordFromDB,
 };
