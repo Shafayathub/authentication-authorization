@@ -8,7 +8,7 @@ import { UserRole } from '../User/user.constant';
 const router = express.Router();
 
 router.post(
-  '/course',
+  '/courses',
   auth(UserRole.admin),
   validateRequest(CourseValidations.createCourseValidationSchema),
   CourseControllers.createCourse,
@@ -34,6 +34,7 @@ router.get(
 
 router.put(
   '/courses/:courseId',
+  auth(UserRole.admin),
   validateRequest(CourseValidations.updateCourseValidationSchema),
   CourseControllers.updateSingleCourse,
 );

@@ -1,9 +1,11 @@
 import { NextFunction, RequestHandler } from 'express';
 import { CategoryServices } from './catagory.service';
+import { JwtPayload } from 'jsonwebtoken';
 
 const createCategory: RequestHandler = async (req, res, next: NextFunction) => {
+  const user: JwtPayload = req.user;
   try {
-    const result = await CategoryServices.createCategoryIntoDB(req.body);
+    const result = await CategoryServices.createCategoryIntoDB(user, req.body);
 
     res.status(201).json({
       success: true,

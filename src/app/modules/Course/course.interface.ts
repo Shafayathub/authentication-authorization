@@ -22,5 +22,5 @@ export type TCourse = {
   provider: string;
   durationInWeeks?: number;
   details: TDetails;
-  createdBy: Types.ObjectId;
+  createdBy?: Types.ObjectId;
 };

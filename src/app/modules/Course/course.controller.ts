@@ -1,9 +1,11 @@
 import { RequestHandler } from 'express';
 import { CourseServices } from './course.service';
+import { JwtPayload } from 'jsonwebtoken';
 
 const createCourse: RequestHandler = async (req, res, next) => {
+  const user: JwtPayload = req.user;
   try {
-    const result = await CourseServices.createCourseIntoDB(req.body);
+    const result = await CourseServices.createCourseIntoDB(user, req.body);
 
     res.status(201).json({
       success: true,

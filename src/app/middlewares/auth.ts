@@ -36,7 +36,7 @@ const auth = (...authRoles: TUserRole[]) => {
           if (authRoles && !authRoles.includes(role)) {
             throw new AppError(
               httpStatus.UNAUTHORIZED,
-              'admin roler problem.',
+              'You do not have the necessary permissions to access this resource.',
               'Unauthorized Access',
             );
           }

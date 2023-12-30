@@ -10,7 +10,7 @@ const createReviewValidationSchema = z.object({
         'Relax 5 means the course is one of the best courses you have ever enrolled!',
     }),
   review: z.string(),
-  createdBy: z.string(),
+  createdBy: z.string().optional(),
 });
 
 export const ReviewValidations = {

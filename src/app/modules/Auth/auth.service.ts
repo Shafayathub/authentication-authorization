@@ -121,13 +121,13 @@ const changePasswordFromDB = async (
         new: true,
       },
     );
-    session.commitTransaction();
-    session.endSession();
+    await session.commitTransaction();
+    await session.endSession();
 
     return result;
   } catch (err) {
-    session.abortTransaction();
-    session.endSession();
+    await session.abortTransaction();
+    await session.endSession();
     throw new AppError(
       httpStatus.FORBIDDEN,
       '',

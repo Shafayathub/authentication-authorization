@@ -22,7 +22,7 @@ const createCourseValidationSchema = z.object({
   provider: z.string(),
   durationInWeeks: z.number().int().optional(),
   details: createDetailsValidationSchema,
-  createdBy: z.string(),
+  createdBy: z.string().optional(),
 });
 
 const updateTagsValidationSchema = z.object({

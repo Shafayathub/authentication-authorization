@@ -7,8 +7,9 @@ import { TCourse } from './course.interface';
 import { Course } from './cousre.model';
 import { Review } from '../Review/review.model';
 import httpStatus from 'http-status';
+import { JwtPayload } from 'jsonwebtoken';
 
-const createCourseIntoDB = async (payload: TCourse) => {
+const createCourseIntoDB = async (user: JwtPayload, payload: TCourse) => {
   const { startDate } = payload;
   const { endDate } = payload;
   const { categoryId } = payload;
@@ -23,7 +24,9 @@ const createCourseIntoDB = async (payload: TCourse) => {
 
   const weeks = Math.ceil(timeDifferenceInMiliSec / (1000 * 60 * 60 * 24 * 7));
 
-  const outPutObj = { durationInWeeks: weeks, ...inputedObj };
+  const { _id } = user;
+
+  const outPutObj = { createdBy: _id, durationInWeeks: weeks, ...inputedObj };
 
   const isCategoryIdExists = await Category.findById(categoryId);
 
@@ -91,13 +94,6 @@ const getAllCoursesFromDB = async (payload: Record<string, unknown>) => {
 
   const maxPriceQuery = minPriceQuery.find({ price: { $lte: maxPrice } });
 
-  // let tags = {};
-  // if (queryObj?.tags) {
-  //   tags = {
-  //     name: queryObj?.tags,
-  //   };
-  // }
-
   if (queryObj?.tags) {
     const tag = queryObj.tags;
     const tagQuery = await maxPriceQuery.find({
@@ -116,7 +112,7 @@ const getAllCoursesFromDB = async (payload: Record<string, unknown>) => {
   ];
   excluseFields.forEach((e) => delete queryObj[e]);
 
-  const result = await maxPriceQuery.find(queryObj);
+  const result = await maxPriceQuery.find(queryObj).populate('createdBy');
 
   return result;
 };
@@ -236,7 +232,7 @@ const updateSingleCourseIntoDB = async (
     );
   }
 
-  const result = await Course.findById(id);
+  const result = await Course.findById(id).populate('createdBy');
 
   return result;
 };
