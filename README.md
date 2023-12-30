@@ -24,7 +24,7 @@ Make sure you have the following installed on your machine:
    ```
 2. **Change into the project directory:**
    ```bash
-   cd level-2-assignment-3
+   cd level-2-assignment-4
    ```
 3. **Install dependencies:**
    ```bash
