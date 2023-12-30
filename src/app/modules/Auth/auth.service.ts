@@ -7,6 +7,7 @@ import config from '../../config';
 import { TUser } from '../User/user.interface';
 import httpStatus from 'http-status';
 import { PasswordHistory } from '../User/passwordHistory/passwordHistory.model';
+import mongoose from 'mongoose';
 
 const loginExistingUser = async (payload: TUserLogin) => {
   const isUserExist: TUser = await User.findOne({
@@ -59,64 +60,80 @@ const changePasswordFromDB = async (
 ) => {
   const { _id } = user;
 
-  const userWhoOwnsThePass = await User.findById(_id).select('+password');
+  const session = await mongoose.startSession();
 
-  const usersPassword = userWhoOwnsThePass?.password as string;
+  try {
+    session.startTransaction();
 
-  const checkCurrentPassword = await bcrypt.compare(
-    payload.currentPassword,
-    usersPassword,
-  );
-  const hasPasswordHistory = await PasswordHistory.findOne({ userId: _id });
-  let passwordHistory = hasPasswordHistory?.passwordHistory || [];
+    const userWhoOwnsThePass = await User.findById(_id).select('+password');
 
-  if (checkCurrentPassword) {
-    passwordHistory.unshift(usersPassword);
-    passwordHistory = passwordHistory.slice(0, 3);
-  }
+    const usersPassword = userWhoOwnsThePass?.password as string;
 
-  const passwordHistoryDB = await PasswordHistory.findOneAndUpdate(
-    { userId: _id },
-    {
-      userId: _id,
-      passwordHistory,
-    },
-    {
-      upsert: true,
-      timestamps: true,
-    },
-  );
+    const checkCurrentPassword = await bcrypt.compare(
+      payload.currentPassword,
+      usersPassword,
+    );
+    const hasPasswordHistory = await PasswordHistory.findOne({ userId: _id });
+    let passwordHistory = hasPasswordHistory?.passwordHistory || [];
 
-  const passwordFromPasswordHistoryDB =
-    passwordHistoryDB?.passwordHistory as string[];
-
-  for (const e of passwordFromPasswordHistoryDB) {
-    const test = await bcrypt.compare(payload?.newPassword, e);
-    if (test) {
-      throw new AppError(
-        httpStatus.FORBIDDEN,
-        '',
-        'Password change failed. Ensure the new password is unique and not among the last 2 used.',
-      );
+    if (checkCurrentPassword) {
+      passwordHistory.unshift(usersPassword);
+      passwordHistory = passwordHistory.slice(0, 3);
     }
+
+    const passwordHistoryDB = await PasswordHistory.findOneAndUpdate(
+      { userId: _id },
+      {
+        userId: _id,
+        passwordHistory,
+      },
+      {
+        upsert: true,
+        timestamps: true,
+      },
+    );
+
+    const passwordFromPasswordHistoryDB =
+      passwordHistoryDB?.passwordHistory as string[];
+
+    for (const e of passwordFromPasswordHistoryDB) {
+      const test = await bcrypt.compare(payload?.newPassword, e);
+      if (test) {
+        throw new AppError(
+          httpStatus.FORBIDDEN,
+          '',
+          'Password change failed. Ensure the new password is unique and not among the last 2 used.',
+        );
+      }
+    }
+    const newPasswordHash = await bcrypt.hash(
+      payload.newPassword,
+      Number(config.bcrypt_salt_rounds),
+    );
+
+    const result = await User.findByIdAndUpdate(
+      _id,
+      {
+        password: newPasswordHash,
+      },
+      {
+        timestamps: true,
+        new: true,
+      },
+    );
+    session.commitTransaction();
+    session.endSession();
+
+    return result;
+  } catch (err) {
+    session.abortTransaction();
+    session.endSession();
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      '',
+      'Password change failed. Ensure the new password is unique and not among the last 2 used',
+    );
   }
-  const newPasswordHash = await bcrypt.hash(
-    payload.newPassword,
-    Number(config.bcrypt_salt_rounds),
-  );
-
-  const result = await User.findByIdAndUpdate(
-    _id,
-    {
-      password: newPasswordHash,
-    },
-    {
-      timestamps: true,
-      new: true,
-    },
-  );
-
-  return result;
 };
 
 export const AuthServices = {
