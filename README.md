@@ -1,4 +1,4 @@
-# Level 2 Assignment 4
+# authentication-authorization
 
 ## livelink:()
 
@@ -24,7 +24,7 @@ Make sure you have the following installed on your machine:
    ```
 2. **Change into the project directory:**
    ```bash
-   cd level-2-assignment-4
+   cd authentication-authorization
    ```
 3. **Install dependencies:**
    ```bash
